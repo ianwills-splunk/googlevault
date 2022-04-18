@@ -460,7 +460,7 @@ class GoogleVaultConnector(BaseConnector):
         if corpus == "GROUPS" and search_method not in ["GROUP_ACCOUNT", "ALL_GROUPS"]:
             return action_result.set_status(phantom.APP_ERROR, GSVAULT_CORPUS_GROUPS_ERROR)
 
-        if corpus in ["MAIL", "DRIVE"] and search_method not in ["ORG_UNIT", "USER_ACCOUNT"]:
+        if corpus in ["MAIL", "DRIVE"] and search_method not in ["ORG_UNIT", "USER_ACCOUNT", "ENTIRE_ORG"]:
             return action_result.set_status(phantom.APP_ERROR, GSVAULT_CORPUS_MAIL_DRIVE_HOLD_ERROR)
 
         if search_method == "ORG_UNIT" and not org_unit_id:
@@ -800,7 +800,7 @@ class GoogleVaultConnector(BaseConnector):
 
     def _vaidate_search_corpus(self, action_result, search_method, corpus, org_unit_id, emails_to_search, shared_drive_ids, data_scope):
         if corpus == "MAIL":
-            if search_method not in ["ORG_UNIT", "ACCOUNT"]:
+            if search_method not in ["ORG_UNIT", "ACCOUNT", "ENTIRE_ORG"]:
                 return action_result.set_status(phantom.APP_ERROR, GSVAULT_CORPUS_MAIL_DRIVE_EXPORT_ERROR)
 
         if search_method == "ORG_UNIT" and not org_unit_id:
@@ -937,7 +937,11 @@ class GoogleVaultConnector(BaseConnector):
             mail_export_options = dict()
 
             if export_format:
-                mail_export_options.update({"exportFormat": export_format})
+                if export_format == 'CSV':
+                    mail_export_options.update({"useNewExport": True})
+                else:
+                    mail_export_options.update({"exportFormat": export_format})
+                
             if show_confidential_mode_content:
                 mail_export_options.update({"showConfidentialModeContent": show_confidential_mode_content})
 
